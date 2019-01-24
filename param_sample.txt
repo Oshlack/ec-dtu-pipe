@@ -1,0 +1,8 @@
+-p txome=txome.fasta
+-p txome_index=txome_index
+-p tx_lookup=transcript_lookup.txt
+-p tx_ref=transcript_reference.txt
+-p sample_regex=Dm
+-p group=0,0,0,1,1,1
+-p feature=ec
+-p fastqFormat=%_sample_%_*.fq.gz
