@@ -48,3 +48,4 @@ if (feature == 'ec') {
 }
 
 results <- run_diffsplice(feat_data, group, sample_regex, feature = feature)
+save(list = c('results', 'feat_data'), file='results.RData')
