@@ -19,17 +19,18 @@ source(dtu_helper)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) < 4 | args[1] == '-h') {
-    print('Usage: Rscript run_dtu.R <feature> <data> <group> <sample_regex> <tx_ref> <tx_lookup>')
+if (length(args) < 5 | args[1] == '-h') {
+    print('Usage: Rscript run_dtu.R <feature> <data> <group> <sample_regex> <outfile> <tx_ref> <tx_lookup>')
 }
 
 feature <- args[1]
 dat <- args[2]
 group <- args[3]
 sample_regex <- args[4]
-if (length(args) > 4) {
-    tx_ref_file <- args[5]
-    tx_lookup_file <- args[6]
+outfile <- args[5]
+if (length(args) > 5) {
+    tx_ref_file <- args[6]
+    tx_lookup_file <- args[7]
 }
 
 group <- as.numeric(strsplit(group, ',')[[1]])
@@ -43,4 +44,4 @@ if (feature == 'ec') {
 }
 
 results <- run_diffsplice(feat_data, group, sample_regex, feature = feature)
-save(list = c('results', 'feat_data'), file='results.RData')
+save(list = c('results', 'feat_data'), file=outfile)

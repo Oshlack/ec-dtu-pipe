@@ -113,6 +113,7 @@ make_ec_matrix = {
 run_dtu = {
     //TODO: fix group -- should be sample names in group 1 rather than binary (can't guarantee order for txs and exs)
     def dat = input
+    def outname = feature
     if (feature == 'tx') {
         dat = 'quant/'
     } else if (feature == 'ex') {
@@ -122,9 +123,9 @@ run_dtu = {
         dat = 'fc_counts/'
     }
 
-    produce(feature + '_results.RData') {
+    produce(outname + '_results.RData') {
         exec """
-        $time Rscript $code_base/run_dtu.R $feature $dat $group $sample_regex $tx_ref $tx_lookup ;
+        $time Rscript $code_base/run_dtu.R $feature $dat $group $sample_regex $output $tx_ref $tx_lookup ;
         """, 'run_dtu'
     }
 }
