@@ -9,11 +9,13 @@ library(data.table)
 library(dplyr)
 library(readr)
 
-#sources
-source('R/load_data.R')
-source('R/dtu.R')
-source('R/util.R')
-source('R/plotting.R')
+# load helper methods
+args <- commandArgs(trailingOnly = FALSE)
+file.arg <- grep("--file=", args, value = TRUE)
+data_helper <- gsub("--file=(.*)run_dtu.R","\\1R/load_data.R", file.arg)
+dtu_helper <- gsub("--file=(.*)run_dtu.R","\\1R/dtu.R", file.arg)
+source(data_helper)
+source(dtu_helper)
 
 args <- commandArgs(trailingOnly = TRUE)
 
