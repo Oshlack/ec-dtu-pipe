@@ -1,7 +1,7 @@
 load_ec_data <- function(ec_matrix_file, tx_lookup, reference, filter_multi_ecs=T, salmon=T) {
     is_gzipped <- tail(strsplit(ec_matrix_file, '\\.')[[1]], 1) == 'gz'
     ec_matrix_file <- ifelse(is_gzipped, paste('zcat <', ec_matrix_file), ec_matrix_file)
-    
+
     df <- fread(ec_matrix_file)
 
     gtx <- read.delim(gzfile(reference), header=F, sep=' ')
@@ -69,15 +69,26 @@ get_tx_info <- function(df, samps, sample_regex) {
 load_ex_data <- function(ex_dir, sample_regex) {
     exs <- list.files(ex_dir)
     exs <- exs[grep(sample_regex, exs)]
+    exs <- exs[grep("txt$", exs)]
     exons <- NULL
+    featurecounts <- F
+    tmp <- read.delim(paste(ex_dir, exs[1], sep='/'), sep='\t', header=T, comment='#')
+    if(ncol(tmp) > 2) {featurecounts <- T}
+
     for(ex in exs) {
         if(sample_regex%in%c('Hs','Dm')) {
             sample <- paste(strsplit(ex, '_')[[1]][1:3], collapse='_')
         } else {
             sample <- strsplit(ex, '_')[[1]][1]
         }
-        e <- read.delim(paste(ex_dir, ex, sep='/'), sep='\t', header=F,
-                        col.names = c('exon_id', sample))
+        if(featurecounts) {
+            e <- read.delim(paste(ex_dir, ex, sep='/'), sep='\t', header=T, comment='#')
+            colnames(e)[1] <- 'exon_id'
+            e <- e[,c('exon_id', tail(colnames(e), 1))]
+        } else {
+            e <- read.delim(paste(ex_dir, ex, sep='/'), sep='\t', header=F,
+                            col.names = c('exon_id', sample))
+        }
         if(is.null(exons)){exons <- e}else{exons <- merge(exons, e, by='exon_id')}
     }
     exons$exon_id <- as.character(exons$exon_id)

@@ -1,10 +1,3 @@
-# plotting
-library(ggplot2)
-library(gridExtra)
-# library(UpSetR)
-library(VennDiagram)
-library(RColorBrewer)
-
 # DE/DTU
 library(edgeR)
 library(DEXSeq)
