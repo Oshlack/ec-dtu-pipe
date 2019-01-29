@@ -6,6 +6,6 @@
 -p tx_ref=[transcript ID to gene lookup]
 -p tx_gtf=[transcript gtf]
 -p genome=[genome fasta]
--p sample_regex=[sample regex]
--p group=[group membership in binary form, separated by commas]
+-p sample_regex=[sample regex (pattern that exists in all samples)]
+-p group=[names of samples in group 2 --  *must match sample names exactly*]
 -p fastqFormat=[format mask of fastq files]

@@ -111,7 +111,6 @@ make_ec_matrix = {
 }
 
 run_dtu = {
-    //TODO: fix group -- should be sample names in group 1 rather than binary (can't guarantee order for txs and exs)
     def dat = input
     def outname = feature
     if (feature == 'tx') {

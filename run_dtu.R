@@ -33,8 +33,6 @@ if (length(args) > 5) {
     tx_lookup_file <- args[7]
 }
 
-group <- as.numeric(strsplit(group, ',')[[1]])
-
 if (feature == 'ec') {
     feat_data <- load_ec_data(dat, tx_lookup_file, tx_ref_file)
 } else if (feature == 'tx') {
@@ -43,6 +41,10 @@ if (feature == 'ec') {
     feat_data <- load_ex_data(dat, sample_regex)
     feature = 'ex'
 }
+
+group <- as.character(strsplit(group, ',')[[1]])
+samples <- colnames(feat_data)[grep(sample_regex, colnames(feat_data))]
+group <- as.numeric(samples %in% group)
 
 results <- run_diffsplice(feat_data, group, sample_regex, feature = feature)
 save(list = c('results', 'feat_data'), file=outfile)
