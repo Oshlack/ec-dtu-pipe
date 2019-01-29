@@ -119,7 +119,6 @@ run_dtu = {
     } else if (feature == 'ex') {
         dat = 'exon_counts/'
     } else if (feature == 'ex_fc') {
-        feature = 'ex'
         dat = 'fc_counts/'
     }
 

@@ -39,8 +39,9 @@ if (feature == 'ec') {
     feat_data <- load_ec_data(dat, tx_lookup_file, tx_ref_file)
 } else if (feature == 'tx') {
     feat_data <- load_tx_data(dat, tx_lookup_file, tx_ref_file)
-} else if (feature == 'ex') {
+} else if (feature %in% c('ex', 'ex_fc')) {
     feat_data <- load_ex_data(dat, sample_regex)
+    feature = 'ex'
 }
 
 results <- run_diffsplice(feat_data, group, sample_regex, feature = feature)
