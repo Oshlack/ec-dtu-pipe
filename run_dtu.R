@@ -44,6 +44,7 @@ if (feature == 'ec') {
 
 group <- as.character(strsplit(group, ',')[[1]])
 samples <- colnames(feat_data)[grep(sample_regex, colnames(feat_data))]
+samples <- as.character(sapply(samples, function(x){strsplit(x, 'Aligned')[[1]][1]}))
 group <- as.numeric(samples %in% group)
 
 results <- run_diffsplice(feat_data, group, sample_regex, feature = feature)
