@@ -5,6 +5,8 @@ star='STAR'
 time='/usr/bin/time -v'
 python2='/group/bioi1/marekc/apps/conda2/bin/python'
 featurecounts='/group/bioi1/marekc/apps/subread-1.6.3-Linux-x86_64/bin/featureCounts'
+RCODEGEN='/group/bioi1/marekc/20180202_ec_dtu/diff_splice_paper/software/Rcode'
+ROUT='/group/bioi1/marekc/20180202_ec_dtu/diff_splice_paper/ROUT'
 
 threads=8
 genome_mem=5050000000
@@ -40,6 +42,18 @@ flatten_gtf = {
     produce(basename + '.gff') {
         exec """
         $time $python2 $dexseq/dexseq_prepare_annotation.py --aggregate='no' $tx_gtf $output
+        """
+    }
+}
+
+flatten_gtf_featurecounts = {
+    idx = tx_gtf.lastIndexOf('.')
+    basename = idx != -1 ? tx_gtf[0..<idx] : tx_gtf
+    basename = basename.split('/')[-1]
+
+    produce(basename + '.featurecounts.gtf') {
+        exec """
+        R CMD BATCH --no-restore --no-save "--args input_gtf=\'$tx_gtf\' output_gtf=\'$output\' ignore_strand=TRUE" $RCODEGEN/generate_flattened_gtf.R $ROUT/generate_flattened_gtf.Rout ;
         """
     }
 }
@@ -94,7 +108,7 @@ featurecounts_count = {
     produce(branch.name + '_count.txt') {
         exec """
         mkdir -p $output.dir ;
-        $time $featurecounts -T $threads -t exon -g exon_id -a $tx_gtf -o $output $input.bam
+        $time $featurecounts -T $threads -t exon -g exon_id -a $input.gtf -o $output $input.bam
         """, 'featurecounts_count'
     }
 }

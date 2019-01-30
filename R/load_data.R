@@ -23,6 +23,7 @@ load_ec_data <- function(ec_matrix_file, tx_lookup, reference, filter_multi_ecs=
         multi_ecs <- multi_ecs$ec_names
         df <- df[!df$ec_names%in%multi_ecs,]
     }
+    df <- df[,!colnames(df) %in% c('tx_id', 'transcript', 'exon', 'exon_id')]
     df <- distinct(data.table(df))
 
     # remove 'trimmed' suffix from sample names if present
@@ -76,11 +77,7 @@ load_ex_data <- function(ex_dir, sample_regex) {
     if(ncol(tmp) > 2) {featurecounts <- T}
 
     for(ex in exs) {
-        if(sample_regex%in%c('Hs','Dm')) {
-            sample <- paste(strsplit(ex, '_')[[1]][1:3], collapse='_')
-        } else {
-            sample <- strsplit(ex, '_')[[1]][1]
-        }
+        sample <- strsplit(ex, '_')[[1]][1]
         if(featurecounts) {
             e <- read.delim(paste(ex_dir, ex, sep='/'), sep='\t', header=T, comment='#')
             colnames(e)[1] <- 'exon_id'
@@ -91,8 +88,10 @@ load_ex_data <- function(ex_dir, sample_regex) {
         }
         if(is.null(exons)){exons <- e}else{exons <- merge(exons, e, by='exon_id')}
     }
+
     exons$exon_id <- as.character(exons$exon_id)
     exons <- exons[grep('_', as.character(exons$exon_id), invert=T),]
     exons$gene_id <- sapply(exons$exon_id, function(x){strsplit(x, ':')[[1]][1]})
+
     return(data.table(exons))
 }
