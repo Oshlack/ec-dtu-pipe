@@ -91,12 +91,12 @@ star_align = {
 
 dexseq_count = {
     output.dir = 'exon_counts'
+    paired = inputs.gz.split().size() == 2 ? 'yes' : 'no'
 
     produce(branch.name + '_count.txt') {
         exec """
-        mkdir -p $output.dir ;
         $time $python2 $dexseq/dexseq_count.py \
-            -p yes -r pos -s no -f bam $input.gff \
+            -p $paired -r pos -s no -f bam $input.gff \
             $input.bam $output
         """, 'dexseq_count'
     }

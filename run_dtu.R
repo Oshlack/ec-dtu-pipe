@@ -48,4 +48,4 @@ samples <- as.character(sapply(samples, function(x){strsplit(x, 'Aligned')[[1]][
 group <- as.numeric(samples %in% group)
 
 results <- run_diffsplice(feat_data, group, sample_regex, feature = feature)
-save(list = c('results', 'feat_data'), file=outfile)
+save(list = c('results', 'feat_data'), file = outfile)
