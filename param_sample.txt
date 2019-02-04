@@ -1,3 +1,7 @@
+-p pipe_dir=[pipeline directory]
+-p threads=[threads]
+-p genome_mem=[max mem in bytes]
+-p RCODEGEN=[path to diff splice paper R code (see README)]
 -p dexseq=[dexseq python scripts folder]
 -p txome=[transcriptome fasta]
 -p salmon_index=[salmon index output dir]

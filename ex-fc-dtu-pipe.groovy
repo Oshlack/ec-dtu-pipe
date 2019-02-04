@@ -1,4 +1,4 @@
-load 'ec_dtu_stages.groovy'
+load 'ec-dtu-stages.groovy'
 
 run { flatten_gtf_featurecounts +
       make_star_index +

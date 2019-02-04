@@ -1,4 +1,4 @@
-load 'ec_dtu_stages.groovy'
+load 'ec-dtu-stages.groovy'
 
 run { make_salmon_index +
       fastqFormat * [ run_salmon ] +
