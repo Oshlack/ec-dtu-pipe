@@ -1,0 +1,16 @@
+-p pipe_dir=.
+-p threads=8
+-p genome_mem=5050000000
+-p dexseq=DEXSeq/inst/python_scripts
+-p star_index=star_index
+-p salmon=salmon
+-p salmon_index=salmon_index
+-p RCODEGEN=diff_splice_paper/software/Rcode/
+-p genome=ref/Drosophila_melanogaster.BDGP5.70.dna.toplevel.fa
+-p txome=ref/Drosophila_melanogaster.BDGP5.70.dna.toplevel.fa
+-p tx_lookup=ref/drosophila_transcript_id_lookup.txt
+-p tx_ref=ref/drosophila_transcript_reference.txt
+-p tx_gtf=ref/Drosophila_melanogaster.BDGP5.70.dna.toplevel.gtf
+-p sample_regex=Dm
+-p group=Dm.4,Dm.5,Dm.6
+-p fastqFormat=%_sample_%_*.fq.gz

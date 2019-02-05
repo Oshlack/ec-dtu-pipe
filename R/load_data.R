@@ -26,11 +26,10 @@ load_ec_data <- function(ec_matrix_file, tx_lookup, reference, filter_multi_ecs=
     df <- df[,!colnames(df) %in% c('tx_id', 'transcript', 'exon', 'exon_id')]
     df <- distinct(data.table(df))
 
-    # remove 'trimmed' suffix from sample names if present
-    tr_names <- grep('trimmed',colnames(df))
-    if(length(tr_names) > 0) {
-        colnames(df)[tr_names] <- sapply(colnames(df)[tr_names], function(x){strsplit(x, '_')[[1]][1]})
-    }
+    # remove suffixes from sample names
+    sample_names <- !colnames(df) %in% c('ec_names', 'ensembl_id', 'gene_id', 'symbol')
+    colnames(df)[sample_names] <- sapply(colnames(df)[sample_names], function(x){strsplit(x, '_')[[1]][1]})
+
     return(df)
 }
 

@@ -5,21 +5,32 @@ make_salmon_index = {
 
     produce('hash.bin') {
         exec """
-        $time salmon index -t $txome -i $salmon_index
+        $time $salmon index -t $txome -i $salmon_index
         """
     }
 }
 
 run_salmon = {
-    def workingDir = System.getProperty('user.dir');
-    def base_outdir = branch.name + '/salmon_out'
+    def base_outdir = branch.name + '_' + feature + '/salmon_out'
+    def skipquant = feature == 'ec' ? '--skipQuant' : ''
     output.dir = base_outdir + '/aux_info'
 
     produce('eq_classes.txt') {
         exec """
-        $time salmon quant --dumpEq --seqBias -i $salmon_index -l A -r $inputs -p $threads -o $base_outdir ;
-        mkdir -p quant; ln -s $workingDir/$base_outdir/quant.sf quant/${branch.name}_quant.sf
+        $time $salmon quant --dumpEq --seqBias $skipquant -i $salmon_index -l A -r $inputs -p $threads -o $base_outdir ;
         """, 'run_salmon'
+    }
+}
+
+link_quant_file = {
+    def workingDir = System.getProperty('user.dir');
+    def base_outdir = branch.name + '_tx/salmon_out'
+    output.dir = 'quant'
+
+    produce(branch.name + '_quant.sf') {
+        exec """
+        ln -s $workingDir/$base_outdir/quant.sf $output
+        """, 'link_quant_file'
     }
 }
 
@@ -66,8 +77,8 @@ make_star_index = {
 star_align = {
     produce(branch.name + 'Aligned.sortedByCoord.out.bam'){
         exec """
-        rm -rf ${out_prefix}_STARtmp ;
-        $time $star --genomeDir $star_index
+        rm -rf ${branch.name}_STARtmp ;
+        $time STAR --genomeDir $star_index
            --readFilesCommand zcat
            --readFilesIn $inputs
            --outSAMtype BAM SortedByCoordinate
@@ -97,7 +108,6 @@ featurecounts_count = {
 
     produce(branch.name + '_count.txt') {
         exec """
-        mkdir -p $output.dir ;
         $time featureCounts -T $threads -t exon -g exon_id -a $input.gtf -o $output $input.bam
         """, 'featurecounts_count'
     }

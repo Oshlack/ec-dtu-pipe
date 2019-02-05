@@ -3,6 +3,7 @@
 -p genome_mem=[max mem in bytes]
 -p RCODEGEN=[path to diff splice paper R code (see README)]
 -p dexseq=[dexseq python scripts folder]
+-p salmon=[path to salmon binary]
 -p txome=[transcriptome fasta]
 -p salmon_index=[salmon index output dir]
 -p star_index=[star index output dir]
