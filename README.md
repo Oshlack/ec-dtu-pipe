@@ -8,7 +8,7 @@ This repository contains a pipeline to run DTU testing in four difference ways:
 * using dexseq's exon counts
 * using featureCount's exon counts
 
-This pipeline implements the commands used to generate the quantification data for our paper: [Fast and accurate differential transcript usage by testing equivalence class counts](https://doi.org/10.1101/501106]).
+This pipeline implements the commands used to generate the quantification data for our paper: [Fast and accurate differential transcript usage by testing equivalence class counts](https://doi.org/10.1101/501106).
 
 Setup
 -----
