@@ -1,7 +1,7 @@
 EC DTU pipeline
 ===============
 
-This repository contains a pipeline to run DTU testing in four difference ways:
+This repository contains a pipeline to run DTU testing in four different ways:
 
 * using salmon equivalence classes
 * using salmon transcript quantifications
@@ -18,8 +18,22 @@ Install the following software:
 * [bpipe](https://github.com/ssadedin/bpipe/releases)
 * [salmon](https://github.com/COMBINE-lab/salmon) (you will need to compile the develop branch in order to use the `--skipQuant` flag)
 * [subread](https://sourceforge.net/projects/subread/files/subread-1.6.3/)
-* [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (you will need to install DEXSeq in R via bioconductor, *and* download the source package somewhere to your machine)
+* [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (download the source package somewhere to your machine)
 * [STAR](https://github.com/alexdobin/STAR)
+
+Install the following R packages:
+
+```
+install.packages('data.table')
+install.packages('readr')
+install.packages('dplyr')
+
+source('http://bioconductor.org/biocLite.R')
+biocLite('edgeR')
+biocLite('DEXSeq')
+biocLite('DRIMSeq')
+biocLite('tximport')
+```
 
 Additionally, clone the following [respository](https://github.com/markrobinsonuzh/diff_splice_paper.git) to your machine:
 
@@ -66,12 +80,12 @@ ENST00000594647 ENST00000594647
 ENST00000335137 ENST00000335137
 ```
 
-The correct paths and arguments will then need to be set up in the `params.txt` file (see `sample_params.txt` for an example for setup using the drosophila data Soneson[1].
+The correct paths and arguments will then need to be set up in the `params.txt` file (see `sample_params.txt` for an example for setup using the drosophila data from Soneson et al[1]).
 
 Fastq format
 ------------
 
-It is important that your fastq files follow your fastq files follow your fastq mask. For example, if our files are in the fornmat:
+It is important that your fastq files follow your fastq mask. For example, if our files are in the format:
 
 ```
 Dm_sample_1_1.fq.gz
