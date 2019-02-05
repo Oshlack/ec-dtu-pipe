@@ -8,7 +8,7 @@ This repository contains a pipeline to run DTU testing in four difference ways:
 * using dexseq's exon counts
 * using featureCount's exon counts
 
-This pipeline implements the commands used to generate the quantification data for our paper: (Fast and accurate differential transcript usage by testing equivalence class counts)[https://doi.org/10.1101/501106].
+This pipeline implements the commands used to generate the quantification data for our paper: [Fast and accurate differential transcript usage by testing equivalence class counts](https://doi.org/10.1101/501106]).
 
 Setup
 -----
@@ -21,7 +21,7 @@ Install the following software:
 * [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (you will need to install DEXSeq in R via bioconductor, *and* download the source package somewhere to your machine)
 * [STAR](https://github.com/alexdobin/STAR)
 
-Additionally, clone the following (respository)[https://github.com/markrobinsonuzh/diff_splice_paper.git] to your machine:
+Additionally, clone the following [respository](https://github.com/markrobinsonuzh/diff_splice_paper.git) to your machine:
 
 ```
 git clone https://github.com/markrobinsonuzh/diff_splice_paper.git
