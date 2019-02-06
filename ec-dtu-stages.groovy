@@ -41,7 +41,7 @@ flatten_gtf = {
 
     produce(basename + '.gff') {
         exec """
-        $time python $dexseq/dexseq_prepare_annotation.py --aggregate='no' $tx_gtf $output
+        $time $python $dexseq/dexseq_prepare_annotation.py --aggregate='no' $tx_gtf $output
         """
     }
 }
@@ -96,7 +96,7 @@ dexseq_count = {
 
     produce(branch.name + '_count.txt') {
         exec """
-        $time $python2 $dexseq/dexseq_count.py \
+        $time $python $dexseq/dexseq_count.py \
             -p $paired -r pos -s no -f bam $input.gff \
             $input.bam $output
         """, 'dexseq_count'
@@ -108,7 +108,7 @@ featurecounts_count = {
 
     produce(branch.name + '_count.txt') {
         exec """
-        $time featureCounts -T $threads -t exon -g exon_id -a $input.gtf -o $output $input.bam
+        $time $featurecounts -T $threads -t exon -g exon_id -a $input.gtf -o $output $input.bam
         """, 'featurecounts_count'
     }
 }
@@ -119,7 +119,7 @@ make_ec_matrix = {
 
     produce('ec_count_matrix.txt') {
         exec """
-        $time python $pipe_dir/create_salmon_ec_count_matrix.py $inputs $sample_names $output
+        $time $python $pipe_dir/create_salmon_ec_count_matrix.py $inputs $sample_names $output
         """, 'create_ec_count_matrix'
     }
 }

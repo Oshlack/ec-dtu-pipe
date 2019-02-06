@@ -2,9 +2,11 @@
 -p threads=8
 -p genome_mem=5050000000
 -p dexseq=DEXSeq/inst/python_scripts
--p star_index=star_index
+-p python=python
+-p featurecounts=featureCounts
 -p salmon=salmon
 -p salmon_index=salmon_index
+-p star_index=star_index
 -p RCODEGEN=diff_splice_paper/software/Rcode/
 -p genome=ref/Drosophila_melanogaster.BDGP5.70.dna.toplevel.fa
 -p txome=ref/Drosophila_melanogaster.BDGP5.70.dna.toplevel.fa
