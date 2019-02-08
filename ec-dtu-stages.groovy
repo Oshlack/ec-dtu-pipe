@@ -17,7 +17,7 @@ run_salmon = {
 
     produce('eq_classes.txt') {
         exec """
-        $time $salmon quant --dumpEq --seqBias $skipquant -i $salmon_index -l A -r $inputs -p $threads -o $base_outdir ;
+        $time $salmon quant --dumpEq $skipquant -i $salmon_index -l A -r $inputs -p $threads -o $base_outdir ;
         """, 'run_salmon'
     }
 }
