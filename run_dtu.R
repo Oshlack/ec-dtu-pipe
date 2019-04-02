@@ -20,7 +20,7 @@ source(dtu_helper)
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) < 5 | args[1] == '-h') {
-    print('Usage: Rscript run_dtu.R <feature> <data> <group> <sample_regex> <outfile> <tx_ref> <tx_lookup>')
+    print('Usage: Rscript run_dtu.R <feature> <data> <group> <sample_regex> <outfile> [--ref <tx_ref>] or [--biomart <dataset>] and optionally: [--lookup <tx_lookup_file>], [--cores <N>]')
 }
 
 feature <- args[1]
@@ -28,15 +28,28 @@ dat <- args[2]
 group <- args[3]
 sample_regex <- args[4]
 outfile <- args[5]
+
+# initialise and set optional vars
+tx_ref_file <- ''; tx_lookup_file <- ''; dataset <- ''
 if (length(args) > 5) {
-    tx_ref_file <- args[6]
-    tx_lookup_file <- args[7]
+    if ('--biomart' %in% args) {
+        dataset <- args[which(args == '--biomart') + 1]
+    } else {
+        tx_ref_file <- args[which(args == '--ref') + 1]
+    }
+    if ('--lookup' %in% args) {
+        tx_lookup_file <- args[which(args == '--lookup') + 1]
+    }
+}
+cores <- 1
+if ('--cores' %in% args) {
+    cores <- as.numeric(args[which(args == '--cores') + 1])
 }
 
 if (feature == 'ec') {
-    feat_data <- load_ec_data(dat, tx_lookup_file, tx_ref_file)
+    feat_data <- load_ec_data(dat, tx_lookup=tx_lookup_file, reference=tx_ref_file, bmart_dset=dataset)
 } else if (feature == 'tx') {
-    feat_data <- load_tx_data(dat, tx_lookup_file, tx_ref_file)
+    feat_data <- load_tx_data(dat, tx_lookup=tx_lookup_file, reference=tx_ref_file, bmart_dset=dataset)
 } else if (feature %in% c('ex', 'ex_fc')) {
     feat_data <- load_ex_data(dat, sample_regex)
     feature = 'ex'
@@ -47,5 +60,5 @@ samples <- colnames(feat_data)[grep(sample_regex, colnames(feat_data))]
 samples <- as.character(sapply(samples, function(x){strsplit(x, 'Aligned')[[1]][1]}))
 group <- as.numeric(samples %in% group)
 
-results <- run_diffsplice(feat_data, group, sample_regex, feature = feature)
+results <- run_diffsplice(feat_data, group, sample_regex, feature=feature, cores=cores)
 save(list = c('results', 'feat_data'), file = outfile)

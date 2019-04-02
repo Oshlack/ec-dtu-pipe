@@ -2,7 +2,7 @@ run_dexseq <- function(counts, genes, group, cpm_cutoff, n_sample_cutoff, cores=
     BPPARAM=MulticoreParam(workers=cores)
     start.time <- Sys.time(); print(start.time)
 
-    counts <- as.matrix(counts[,!colnames(counts)%in%c('ec_names','exon_id','gene_id')])
+    counts <- as.matrix(counts[,!colnames(counts)%in%c('ec_names','exon_id','gene_id','symbol')])
 
     sampleTable <- data.frame(condition=as.factor(group))
     rownames(sampleTable) <- colnames(counts)
@@ -26,7 +26,7 @@ run_dexseq <- function(counts, genes, group, cpm_cutoff, n_sample_cutoff, cores=
                 gene_FDR=data.frame(gene=names(pgq), FDR=pgq)))
 }
 
-run_diffsplice <- function(df, group, sample_regex, feature=c('tx', 'ec', 'ex'), cpm_cutoff=0, n_sample_cutoff=0) {
+run_diffsplice <- function(df, group, sample_regex, feature=c('tx', 'ec', 'ex'), cpm_cutoff=0, n_sample_cutoff=0, cores=cores) {
     if (feature == 'tx') {
         samps <- data.frame(sample_id = colnames(df)[grep(sample_regex, colnames(df))])
         samps$condition <- as.numeric(as.factor(group)) - 1
@@ -42,7 +42,7 @@ run_diffsplice <- function(df, group, sample_regex, feature=c('tx', 'ec', 'ex'),
         colnames(genes)[2] <- 'feature_id'
         counts <- data.frame(counts)[,grep(sample_regex, colnames(counts))]
     }
-    results <- run_dexseq(counts, genes, group, cpm_cutoff, n_sample_cutoff)
+    results <- run_dexseq(counts, genes, group, cpm_cutoff, n_sample_cutoff, cores=cores)
     return(results)
 }
 

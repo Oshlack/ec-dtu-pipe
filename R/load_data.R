@@ -1,29 +1,44 @@
-load_ec_data <- function(ec_matrix_file, tx_lookup, reference, filter_multi_ecs=T, salmon=T) {
+get_ref <- function(reference, bmart_dset) {
+    if (reference == '') {
+        library(biomaRt)
+        mart <- useMart('ENSEMBL_MART_ENSEMBL',
+                        dataset=bmart_dset)
+        ensg_attr <- c('external_gene_name',
+                       'ensembl_gene_id',
+                       'ensembl_transcript_id')
+        gtx <- getBM(mart=mart, attributes=ensg_attr)
+        colnames(gtx) <- c('symbol', 'gene_id', 'ensembl_id')
+    } else {
+        gtx <- read.delim(gzfile(reference), header=F, sep=' ')
+        colnames(gtx) <- c('gene_id', 'ensembl_id', 'exon', 'symbol', 'exon_id')
+    }
+    return(gtx)
+}
+
+
+load_ec_data <- function(ec_matrix_file, tx_lookup='', reference='', bmart_dset='', filter_multi_ecs=T, salmon=T) {
     is_gzipped <- tail(strsplit(ec_matrix_file, '\\.')[[1]], 1) == 'gz'
     ec_matrix_file <- ifelse(is_gzipped, paste('zcat <', ec_matrix_file), ec_matrix_file)
-
     df <- fread(ec_matrix_file)
+    gtx <- get_ref(reference, bmart_dset)
 
-    gtx <- read.delim(gzfile(reference), header=F, sep=' ')
-    colnames(gtx) <- c('gene_id', 'ensembl_id', 'exon', 'symbol', 'exon_id')
-
-    if(salmon){
+    if(salmon & tx_lookup != ''){
         lookup <- read.delim(gzfile(tx_lookup), sep=' ', header=F)
         colnames(lookup) <- c('transcript', 'ensembl_id')
         df <- inner_join(df, lookup, by='transcript')
     } else {
-        colnames(df)[colnames(df)=='transcript'] <- 'ensembl_id'
+        colnames(df)[colnames(df) == 'transcript'] <- 'ensembl_id'
     }
 
     df <- inner_join(df, gtx, by='ensembl_id')
 
     if(filter_multi_ecs) {
         multi_ecs <- data.table(df)[, length(unique(gene_id)), keyby=ec_names]
-        multi_ecs <- multi_ecs[multi_ecs$V1>1]
+        multi_ecs <- multi_ecs[multi_ecs$V1 > 1]
         multi_ecs <- multi_ecs$ec_names
-        df <- df[!df$ec_names%in%multi_ecs,]
+        df <- df[!df$ec_names %in% multi_ecs,]
     }
-    df <- df[,!colnames(df) %in% c('tx_id', 'transcript', 'exon', 'exon_id')]
+    df <- df[,!colnames(df) %in% c('tx_id', 'transcript', 'ensembl_id', 'exon', 'exon_id', 'symbol')]
     df <- distinct(data.table(df))
 
     # remove suffixes from sample names
@@ -33,13 +48,8 @@ load_ec_data <- function(ec_matrix_file, tx_lookup, reference, filter_multi_ecs=
     return(df)
 }
 
-load_tx_data <- function(dir, tx_lookup, reference, scaling="scaledTPM") {
-    lookup <- read.delim(tx_lookup, sep=' ', header=F)
-    colnames(lookup) <- c('Name', 'ensembl_id')
-    lookup$Name <- as.character(lookup$Name)
-
-    gtx <- read.delim(reference, header=F, sep=' ')
-    colnames(gtx) <- c('gene_id', 'ensembl_id', 'exon', 'symbol', 'exon_id')
+load_tx_data <- function(dir, tx_lookup='', reference='', bmart_dset='', scaling="scaledTPM") {
+    gtx <- get_ref(reference, bmart_dset)
 
     files <- list.files(dir)
     files <- as.character(sapply(files, function(x){paste0(dir, x)}))
@@ -49,7 +59,15 @@ load_tx_data <- function(dir, tx_lookup, reference, scaling="scaledTPM") {
     colnames(tx_counts) <- as.character(samples)
     tx_counts$Name <- as.character(rownames(tx_counts))
 
-    df <- inner_join(tx_counts, lookup, by='Name')
+    if(tx_lookup != '') {
+        lookup <- read.delim(tx_lookup, sep=' ', header=F)
+        colnames(lookup) <- c('Name', 'ensembl_id')
+        lookup$Name <- as.character(lookup$Name)
+        df <- inner_join(tx_counts, lookup, by='Name')
+    } else {
+        df <- tx_counts
+        colnames(df)[colnames(df)=='Name'] <- 'ensembl_id'
+    }
     df <- inner_join(df, gtx, by='ensembl_id')
 
     df[is.na(df)] <- 0

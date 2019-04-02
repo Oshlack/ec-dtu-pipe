@@ -1,5 +1,5 @@
 -p pipe_dir=[pipeline directory]
--p threads=[threads]
+-p cores=[cores]
 -p genome_mem=[max mem in bytes]
 -p RCODEGEN=[path to diff splice paper R code (see README)]
 -p dexseq=[dexseq python scripts folder]
@@ -16,3 +16,5 @@
 -p sample_regex=[sample regex (pattern that exists in all samples)]
 -p group=[names of samples in group 2 --  *must match sample names exactly*]
 -p fastqFormat=[format mask of fastq files]
+-p skipQuant=[True or False]
+-p time=[time function, assign empty string if time not required]

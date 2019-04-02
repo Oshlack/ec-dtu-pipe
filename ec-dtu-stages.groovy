@@ -1,5 +1,3 @@
-time='/usr/bin/time -v'
-
 make_salmon_index = {
     output.dir = salmon_index
 
@@ -12,12 +10,18 @@ make_salmon_index = {
 
 run_salmon = {
     def base_outdir = branch.name + '_' + feature + '/salmon_out'
-    def skipquant = feature == 'ec' ? '--skipQuant' : ''
-    output.dir = base_outdir + '/aux_info'
+    def skipquantarg = feature == 'ec' && skipQuant.toBoolean() ? '--skipQuant' : ''
 
+    def reads = '-r ' + inputs
+    if (reads.size() > 1) {
+        reads = '-1 ' + inputs[0] + ' -2 ' + inputs[1]
+    }
+
+    output.dir = base_outdir + '/aux_info'
     produce('eq_classes.txt') {
         exec """
-        $time $salmon quant --dumpEq $skipquant -i $salmon_index -l A -r $inputs -p $threads -o $base_outdir ;
+        $time $salmon quant --seqBias --gcBias --dumpEq \
+            --index $salmon_index -l A $reads -p $cores -o $base_outdir $skipquantarg
         """, 'run_salmon'
     }
 }
@@ -68,7 +72,7 @@ make_star_index = {
               --genomeDir $star_index \
               --sjdbGTFfile $tx_gtf \
               --genomeFastaFiles $genome \
-              --runThreadN $threads \
+              --runThreadN $cores \
               --genomeSAindexNbases 5
         """, 'make_star_index'
     }
@@ -83,7 +87,7 @@ star_align = {
            --readFilesIn $inputs
            --outSAMtype BAM SortedByCoordinate
            --outFileNamePrefix $branch.name
-           --runThreadN $threads
+           --runThreadN $cores
            --limitBAMsortRAM $genome_mem ;
         $time samtools index $output
         """, 'star_align'
@@ -108,7 +112,7 @@ featurecounts_count = {
 
     produce(branch.name + '_count.txt') {
         exec """
-        $time $featurecounts -T $threads -t exon -g exon_id -a $input.gtf -o $output $input.bam
+        $time $featurecounts -T $cores -t exon -g exon_id -a $input.gtf -o $output $input.bam
         """, 'featurecounts_count'
     }
 }
@@ -135,9 +139,20 @@ run_dtu = {
         dat = 'fc_counts/'
     }
 
+    def optargs = ''
+    if (tx_ref != '$tx_ref' && tx_ref != '') {
+        optargs = optargs + ' --ref ' + tx_ref
+    }
+    if (tx_lookup != '$tx_lookup' && tx_lookup != '') {
+        optargs = optargs + ' --lookup ' + tx_lookup
+    }
+    if (bmart_dset != '$bmart_dset' && bmart_dset != '') {
+        optargs = optargs + '--biomart ' + bmart_dset
+    }
+
     produce(outname + '_results.RData') {
         exec """
-        $time Rscript $pipe_dir/run_dtu.R $feature $dat $group $sample_regex $output $tx_ref $tx_lookup ;
+        $time Rscript $pipe_dir/run_dtu.R $feature $dat $group $sample_regex $output $optargs --cores $cores
         """, 'run_dtu'
     }
 }
