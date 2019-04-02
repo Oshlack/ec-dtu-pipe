@@ -16,37 +16,58 @@ Setup
 Install the following software:
 
 * [bpipe](https://github.com/ssadedin/bpipe/releases)
-* [salmon](https://github.com/COMBINE-lab/salmon) (you will need to compile the develop branch in order to use the `--skipQuant` flag)
-* [subread](https://sourceforge.net/projects/subread/files/subread-1.6.3/)
-* [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (download the source package somewhere to your machine)
-* [STAR](https://github.com/alexdobin/STAR)
+* [Anaconda](https://www.anaconda.com/distribution/#download-section) (if running exon-based analysis, you will require python 2.7+ to run DEXSeq's counting, otherwise either version is compatible)
+  * (equivalently, [Python](https://www.python.org/downloads/) with [Numpy](http://www.numpy.org/) and [Pandas](https://pandas.pydata.org/) can be installed)
+* [salmon](https://github.com/COMBINE-lab/salmon) (required for EC and transcript-based analysis; you will need to compile the develop branch in order to use the `--skipQuant` flag) 
+* [subread](https://sourceforge.net/projects/subread/files/subread-1.6.3/) (required for exon-based analysis using featureCounts)
+* [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (required for exon-based analysis using DEXSeq's exon counting; download the source package somewhere to your machine)
+* [STAR](https://github.com/alexdobin/STAR) (required for exon-based analysis)
 
 Install the following R packages:
 
 ```
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("DEXSeq")
+BiocManager::install("DRIMSeq")
+BiocManager::install("tximport")
+BiocManager::install("biomaRt")
 install.packages('data.table')
-install.packages('readr')
 install.packages('dplyr')
-
-source('http://bioconductor.org/biocLite.R')
-biocLite('edgeR')
-biocLite('DEXSeq')
-biocLite('DRIMSeq')
-biocLite('tximport')
 ```
 
-Additionally, clone the following [respository](https://github.com/markrobinsonuzh/diff_splice_paper.git) to your machine:
+Clone the pipeline repository to your machine:
+
+```
+git clone git@github.com:Oshlack/ec-dtu-pipe.git
+```
+
+If you reqiure exon-based analysses, clone the following [respository](https://github.com/markrobinsonuzh/diff_splice_paper.git) to your machine:
 
 ```
 git clone https://github.com/markrobinsonuzh/diff_splice_paper.git
 ```
 
-Now download the following references for your organism of choice:
+Ensure that the `params.txt` file is set up with the correct paths and options. Refer to `sample_params.txt` for an example setup using the drosophila data from Soneson et al[1].
+
+References
+----------
+
+Download the following references for your organism of choice:
 
 * genome fasta
 * transcriptome fasta
 * transcriptome GTF (containing exon locations)
-* reference lookup containing gene, transcript, exon number, gene name and exon ID (space-separated); for example:
+
+The pipeline needs to match transcript IDs to gene IDs in order to run _DEXSeq_. There are two ways to do this. Either make sure [biomaRt](https://bioconductor.org/packages/release/bioc/html/biomaRt.html) is installed and then add the following to your `params.txt` file:
+
+```
+-p bmart_dset=<dataset>
+```
+
+For example, your dataset may be `hsapiens_gene_ensembl` if you are using human data.
+
+Alternatively, you can create a reference lookup file containing gene, transcript, exon number, gene name and exon ID (space-separated); for example:
 
 ```
 ENSG00000198888 ENST00000361390 1 MT-ND1 ENSE00001435714
@@ -55,7 +76,22 @@ ENSG00000198804 ENST00000361624 1 MT-CO1 ENSE00001435647
 ENSG00000198712 ENST00000361739 1 MT-CO2 ENSE00001435613
 ```
 
-Lastly, you'll need a transcript ID lookup file that looks like this:
+Ensure that this file referenced in your `params.txt` file, e.g.:
+
+```
+-p tx_lookup=<path to lookup file>
+```
+
+In the case where your transcript IDs in your fasta reference file do not contain your desired transcript reference IDs, you will need to create a lookup file. This may be required as salmon will take the transcript ID to be the first `name` after the `>`. For example, the `ENST00000417324` transcript will be referred to as `41361` if your fasta format is as follows:
+
+```
+>41361 ENST00000417324 1- 34554-35174,35277-35481,35721-36081
+AGCAGCAGGAGTGTTTTAATTAAAAGAAGGCAGTTGCTGTAACCAACTATAAACAAATAA
+```
+
+This file isn't necessary if your transcript IDs come right after the `>`.
+
+If a lookup file is required, it must have the IDs from the fasta in the first column, and the transcript IDs in the second column. The transcript IDs must match whatever reference you are using in biomaRt or in your transcript reference file (ensembl, for example). For example:
 
 ```
 41361 ENST00000417324
@@ -63,24 +99,6 @@ Lastly, you'll need a transcript ID lookup file that looks like this:
 41363 ENST00000594647
 41364 ENST00000335137
 ```
-
-This is because salmon will take the transcript ID to be the first `name` after the `>`. For example, the `ENST00000417324` transcript will be referred to as `41361` if your fasta format is as follows:
-
-```
->41361 ENST00000417324 1- 34554-35174,35277-35481,35721-36081
-AGCAGCAGGAGTGTTTTAATTAAAAGAAGGCAGTTGCTGTAACCAACTATAAACAAATAA
-```
-
-This file shouldn't be necessary if your transcript IDs come right after the `>`, but for the meantime the pipeline requires this file. In the case that your transcript IDs are the same as salmon's IDs, create a file with identical columns, separated by a space:
-
-```
-ENST00000417324 ENST00000417324
-ENST00000461467 ENST00000461467
-ENST00000594647 ENST00000594647
-ENST00000335137 ENST00000335137
-```
-
-The correct paths and arguments will then need to be set up in the `params.txt` file (see `sample_params.txt` for an example for setup using the drosophila data from Soneson et al[1]).
 
 Fastq format
 ------------
