@@ -1,5 +1,5 @@
 -p pipe_dir=.
--p threads=8
+-p codes=8
 -p genome_mem=5050000000
 -p dexseq=DEXSeq/inst/python_scripts
 -p python=python
@@ -16,3 +16,5 @@
 -p sample_regex=Dm
 -p group=Dm.4,Dm.5,Dm.6
 -p fastqFormat=%_sample_%_*.fq.gz
+-p skipQuant=True
+-p time=time
