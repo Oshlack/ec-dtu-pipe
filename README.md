@@ -18,10 +18,12 @@ Install the following software:
 * [bpipe](https://github.com/ssadedin/bpipe/releases)
 * [Anaconda](https://www.anaconda.com/distribution/#download-section) (if running exon-based analysis, you will require python 2.7+ to run DEXSeq's counting, otherwise either version is compatible)
   * (equivalently, [Python](https://www.python.org/downloads/) with [Numpy](http://www.numpy.org/) and [Pandas](https://pandas.pydata.org/) can be installed)
-* [salmon](https://github.com/COMBINE-lab/salmon) (required for EC and transcript-based analysis; you will need to compile the develop branch in order to use the `--skipQuant` flag) 
+* [salmon](https://github.com/COMBINE-lab/salmon) (required for EC and transcript-based analysis; you will need to compile the develop branch in order to use the `--skipQuant` flag)
 * [subread](https://sourceforge.net/projects/subread/files/subread-1.6.3/) (required for exon-based analysis using featureCounts)
 * [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (required for exon-based analysis using DEXSeq's exon counting; download the source package somewhere to your machine)
 * [STAR](https://github.com/alexdobin/STAR) (required for exon-based analysis)
+
+*NOTE*: Using [Python 3+](https://www.python.org/download/releases/3.0/) is highly recommended for running the ECC-based pipeline. Creating the ECC matrix using Python 2 may result in significantly higher compute times.
 
 Install the following R packages:
 
