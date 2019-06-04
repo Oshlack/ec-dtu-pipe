@@ -1,6 +1,3 @@
-##############################################################
-# Author: Marek Cmero
-##############################################################
 '''
 Module      : create_salmon_ec_count_matrix
 Description : Create equivalence class matrix from salmon.
@@ -11,29 +8,35 @@ Portability : POSIX
 Match salmon equivalence class output files from multiple
 samples and create a matrix with EC counts and transcript IDs
 '''
-
-import os
-import argparse
-import re
 import pandas as pd
 import numpy as np
+import sys
+from argparse import ArgumentParser
 
-parser = argparse.ArgumentParser(usage =
+def parse_args():
     '''
-    python create_ec_count_matrix.py <eq_classes> <samples> <outfile>
+    Parse command line arguments.
+    Returns Options object with command line argument values as attributes.
+    Will exit the program on a command line error.
+    '''
+    description = 'Create EC counts matrix from Salmon input'
+    usage =  '''
+        python create_ec_count_matrix.py <eq_classes> <samples> <outfile>
 
-    For example:
-    python create_ec_count_matrix.py \\
-           sample1/aux_info/eq_classes.txt sample2/aux_info/eq_classes.txt \\
-           sample1,sample2 ec_matrix.txt''')
+        For example:
+        python create_ec_count_matrix.py \\
+               sample1/aux_info/eq_classes.txt \\
+               sample2/aux_info/eq_classes.txt \\
+               sample1,sample2 ec_matrix.txt'''
+    parser = ArgumentParser(description=description, usage=usage)
+    parser.add_argument('inputs', nargs='*')
 
-
-parser.add_argument('inputs', nargs='*')
-args = parser.parse_args()
-
-ec_files = args.inputs[:-2]
-sample_names = args.inputs[-2]
-outfile = args.inputs[-1]
+    args = parser.parse_args()
+    if len(args.inputs) < 3:
+        print("Invalid arguments\n\nusage:")
+        print(usage)
+        sys.exit()
+    return args
 
 def load_ecs(ec_file):
     '''
@@ -41,59 +44,71 @@ def load_ecs(ec_file):
     and return dictionary with all transcripts,
     equivalence class transcript IDs and counts
     '''
-
     ec_df = pd.read_csv(ec_file, header=None)
-    ec_df = ec_df[0].apply(lambda x: x.split('\t'))
-    transcripts = ec_df[ec_df.apply(len)==1][2:]
-    transcripts = [t for tx in transcripts for t in tx]
+    ecc = [x.split('\t') for x in ec_df[0].values if len(x.split('\t')) > 1]
+    ec_txs = ['|'.join(x[1:-1]) for x in ecc]
+    ec_counts = [int(x[-1]) for x in ecc]
 
-    # extract counts and transcript IDs
-    ec_df = ec_df[ec_df.apply(len)>1]
-    counts = ec_df.apply(lambda x: int(x[-1])).values
-    tx_ids = ec_df.apply(lambda x: x[1:-1]).values
+    return ec_txs, ec_counts
 
-    output = {'transcripts': transcripts,
-              'tx_ids': tx_ids,
-              'counts': counts}
-
-    return(output)
-
-def build_ec_dict(ec_dict, sample, name):
+def build_ec_matrix(sample_ecs, sample_names):
     '''
     Build equivalence class dictionary of
     counts using transcript IDs as keys
     '''
-    tx_ids = map(lambda x: '|'.join(list(map(str, x))), sample['tx_ids'])
-    for tx_id, count in zip(tx_ids, sample['counts']):
-        if tx_id not in ec_dict.keys():
-            ec_dict[tx_id] = {}
-        ec_dict[tx_id][name] = count
-    return(ec_dict)
+    ec_dicts = {}
+    for idx,sec in enumerate(sample_ecs):
+        ec_dict = {}
+        ec_list = [ec for ec in zip(sec[0], sec[1])]
+        ec_dict.update(ec_list)
+        ec_dicts[sample_names[idx]] = ec_dict
 
-sample_names = sample_names.split(',')
-assert len(sample_names) == len(ec_files)
-sample_ecs = [load_ecs(file) for file in ec_files]
+    return pd.DataFrame(ec_dicts).fillna(0)
 
-# build EC dictionary
-ec_dict = {}
-for idx, sample_ec in enumerate(sample_ecs):
-    ec_dict = build_ec_dict(ec_dict, sample_ec, sample_names[idx])
+def construct_dataframe(ec_matrix, tx_lookup):
+    '''
+    - split transcript IDs
+    - add EC names
+    - convert transcript IDs to transcript names
+    '''
+    tmp = [(eid, etxs.split('|')) for eid, etxs in enumerate(ec_matrix.index.values)]
+    tmp = [(tid, eid) for eid, tids in tmp for tid in tids]
+    tx_ids, ec_ids = zip(*tmp)
 
-# construct counts dataframe
-counts = pd.DataFrame(ec_dict).transpose().fillna(0)
-ec_names = ['ec%d' % (i+1) for i in range(len(counts))]
-counts = counts.assign(ec_names=ec_names)
-counts = counts.assign(tx_ids=counts.index.values)
+    ec_names = ['ec%d' % (i+1) for i in ec_ids]
+    ec_matrix = ec_matrix.iloc[np.array(ec_ids)]
+    ec_matrix = ec_matrix.assign(ec_names=ec_names)
+    ec_matrix = ec_matrix.assign(tx_ids=tx_ids)
 
-# split ECs with multiple transcript IDs into separate rows
-tmp = counts.tx_ids.str.split('|').apply(pd.Series, 1).stack()
-tmp.index = tmp.index.droplevel(-1)
-tmp = pd.DataFrame(tmp, columns=['tx_id'])
-tmp.name = 'tx_ids'
-counts = counts.join(tmp)
-del counts['tx_ids']
+    tx_names = [tx_lookup[tx_id] for tx_id in ec_matrix.tx_ids.map(int).values]
+    ec_matrix = ec_matrix.assign(transcript=tx_names)
 
-# transcript IDs > names
-counts['transcript'] = np.array([sample_ecs[0]['transcripts'][tidx] for tidx in counts.tx_id.map(int).values])
+    return ec_matrix
 
-counts.to_csv(outfile, sep='\t', index=False)
+def get_tx_lookup(ec_file):
+    ec_df = pd.read_csv(ec_file, header=None)
+    tx_lookup = [x for x in ec_df[0].values if len(x.split('\t')) == 1][2:]
+    return np.array(tx_lookup)
+
+def main():
+    args = parse_args()
+    ec_files = args.inputs[:-2]
+    sample_names = args.inputs[-2]
+    outfile = args.inputs[-1]
+
+    print('Loading ECs...')
+    sample_ecs = [load_ecs(file) for file in ec_files]
+    sample_names = sample_names.split(',')
+
+    print('Building EC matrix...')
+    ec_matrix = build_ec_matrix(sample_ecs, sample_names)
+
+    print('Constructing dataframe...')
+    tx_lookup = get_tx_lookup(ec_files[0])
+    ec_matrix = construct_dataframe(ec_matrix, tx_lookup)
+
+    print('Writing output...')
+    ec_matrix.to_csv(outfile, sep='\t', index=False)
+
+if __name__ == '__main__':
+    main()

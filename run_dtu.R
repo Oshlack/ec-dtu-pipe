@@ -1,5 +1,4 @@
 # DE/DTU
-library(edgeR)
 library(DEXSeq)
 library(DRIMSeq)
 library(tximport)
