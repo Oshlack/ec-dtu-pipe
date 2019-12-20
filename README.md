@@ -145,6 +145,8 @@ To perform DTU analysis using exon counts derived from featureCounts, run the pi
 bpipe run @params.txt ex-fc-dtu-pipe.groovy <fastq files>
 ```
 
+**NOTE:** if you are customising the salmon step, do not use the `--validateMappings` flag, **unless** you also use the `--hardFilter` flag. Otherwise, ECs cannot be matched correctly between samples.
+
 Results
 -------
 
