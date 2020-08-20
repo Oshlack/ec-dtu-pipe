@@ -1,7 +1,7 @@
 make_salmon_index = {
     output.dir = salmon_index
 
-    produce('hash.bin') {
+    produce('*.bin') {
         exec """
         $time $salmon index -t $txome -i $salmon_index
         """
@@ -18,7 +18,7 @@ run_salmon = {
     }
 
     output.dir = base_outdir + '/aux_info'
-    produce('eq_classes.txt') {
+    produce('eq_classes.txt*') {
         exec """
         $time $salmon quant --seqBias --gcBias --dumpEq \
             --index $salmon_index -l A $reads -p $cores -o $base_outdir $skipquantarg
